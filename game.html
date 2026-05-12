@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Party Zone 🔥</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0b16;
+  --surface: #1a1528;
+  --card: #221c35;
+  --accent: #ff2d6f;
+  --accent2: #ff9000;
+  --accent3: #00d4ff;
+  --accent4: #a259ff;
+  --text: #f0eaff;
+  --muted: #8878aa;
+  --radius: 20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  font-family:'Nunito',sans-serif;
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  position:relative;
+}
+
+/* Ambient blobs */
+.blob{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.b1{width:300px;height:300px;background:rgba(255,45,111,0.15);top:-80px;left:-80px;animation:blobMove1 8s ease-in-out infinite}
+.b2{width:250px;height:250px;background:rgba(162,89,255,0.15);bottom:-60px;right:-60px;animation:blobMove2 10s ease-in-out infinite}
+.b3{width:200px;height:200px;background:rgba(0,212,255,0.1);top:40%;left:50%;animation:blobMove3 12s ease-in-out infinite}
+@keyframes blobMove1{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,20px)}}
+@keyframes blobMove2{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,-30px)}}
+@keyframes blobMove3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.3)}}
+
+/* Screens */
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:20px;
+  z-index:1;
+  transition:opacity 0.35s ease,transform 0.35s ease;
+  overflow-y:auto;
+}
+.screen.hidden{opacity:0;pointer-events:none;transform:scale(0.95)}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{gap:18px}
+
+.logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(48px,12vw,80px);
+  letter-spacing:0.05em;
+  line-height:1;
+  text-align:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent4));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 30px rgba(255,45,111,0.4));
+}
+.logo-sub{font-size:13px;color:var(--muted);letter-spacing:0.3em;text-transform:uppercase;text-align:center;margin-top:-6px}
+
+.section-label{font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);align-self:flex-start;margin-bottom:-10px}
+
+/* Player input area */
+.player-list{width:100%;max-width:420px;display:flex;flex-direction:column;gap:8px}
+.player-row{display:flex;align-items:center;gap:8px;animation:slideIn 0.2s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.player-num{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:13px;flex-shrink:0;
+}
+.player-input{
+  flex:1;background:var(--card);border:1.5px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:10px 14px;color:var(--text);
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;
+  outline:none;transition:border-color 0.2s;
+}
+.player-input:focus{border-color:var(--accent4)}
+.player-input::placeholder{color:var(--muted);font-weight:600}
+.del-btn{
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:rgba(255,45,111,0.15);color:var(--accent);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background 0.2s;
+}
+.del-btn:hover{background:rgba(255,45,111,0.3)}
+
+.add-player-btn{
+  width:100%;max-width:420px;padding:11px;
+  border:2px dashed rgba(255,255,255,0.15);border-radius:14px;
+  background:transparent;color:var(--muted);
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all 0.2s;letter-spacing:0.05em;
+}
+.add-player-btn:hover{border-color:var(--accent4);color:var(--accent4)}
+
+/* Game mode cards */
+.modes-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px}
+.mode-card{
+  background:var(--card);border:2px solid transparent;
+  border-radius:16px;padding:14px 12px;
+  cursor:pointer;text-align:center;
+  transition:all 0.2s;user-select:none;
+}
+.mode-card:hover,.mode-card.selected{border-color:var(--accent4);background:#2d2448}
+.mode-card.selected{box-shadow:0 0 20px rgba(162,89,255,0.3)}
+.mode-icon{font-size:28px;margin-bottom:6px}
+.mode-name{font-size:13px;font-weight:800;color:var(--text)}
+.mode-desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+
+.start-btn{
+  width:100%;max-width:420px;padding:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent4));
+  border:none;border-radius:var(--radius);
+  font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.1em;
+  color:#fff;cursor:pointer;
+  box-shadow:0 8px 30px rgba(255,45,111,0.4);
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,45,111,0.5)}
+.start-btn:active{transform:scale(0.97)}
+
+/* ── GAME SCREEN ── */
+#game-screen{padding:0}
+
+.game-header{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;
+  background:rgba(14,11,22,0.8);
+  backdrop-filter:blur(10px);
+  z-index:10;
+}
+.game-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;color:var(--text)}
+.back-btn{
+  background:rgba(255,255,255,0.08);border:none;border-radius:10px;
+  padding:7px 14px;color:var(--text);font-family:'Nunito',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;transition:background 0.2s;
+}
+.back-btn:hover{background:rgba(255,255,255,0.15)}
+
+.player-chips{
+  position:absolute;top:64px;left:0;right:0;
+  display:flex;gap:8px;padding:10px 20px;overflow-x:auto;
+  scrollbar-width:none;z-index:9;
+}
+.player-chips::-webkit-scrollbar{display:none}
+.chip{
+  padding:5px 14px;border-radius:20px;
+  font-size:12px;font-weight:800;white-space:nowrap;
+  border:2px solid transparent;transition:all 0.2s;flex-shrink:0;
+  background:var(--card);color:var(--muted);
+}
+.chip.active-chip{color:#fff;transform:scale(1.08)}
+
+/* Card area */
+.card-area{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:80px 20px 100px;
+  gap:20px;
+}
+
+.big-card{
+  width:100%;max-width:380px;
+  background:var(--card);border-radius:24px;
+  padding:30px 24px;text-align:center;
+  border:2px solid rgba(255,255,255,0.06);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  animation:cardFlip 0.4s ease;
+  position:relative;overflow:hidden;
+}
+@keyframes cardFlip{from{opacity:0;transform:rotateY(90deg) scale(0.9)}to{opacity:1;transform:rotateY(0deg) scale(1)}}
+.big-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);
+  pointer-events:none;
+}
+
+.card-type-badge{
+  display:inline-block;padding:5px 16px;
+  border-radius:20px;font-size:11px;font-weight:800;
+  letter-spacing:0.15em;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.badge-truth{background:rgba(0,212,255,0.2);color:var(--accent3)}
+.badge-dare{background:rgba(255,45,111,0.2);color:var(--accent)}
+.badge-task{background:rgba(255,144,0,0.2);color:var(--accent2)}
+.badge-challenge{background:rgba(162,89,255,0.2);color:var(--accent4)}
+.badge-hot{background:rgba(255,45,111,0.2);color:var(--accent)}
+.badge-action{background:rgba(0,212,255,0.2);color:var(--accent3)}
+.badge-wild{background:rgba(255,144,0,0.2);color:var(--accent2)}
+.badge-wouldyou{background:rgba(162,89,255,0.2);color:var(--accent4)}
+.badge-neveri{background:rgba(255,45,111,0.15);color:#ff8ab0}
+.badge-guess{background:rgba(0,212,255,0.15);color:#80eaff}
+
+.card-player{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(28px,8vw,44px);
+  letter-spacing:0.08em;
+  margin-bottom:12px;
+  line-height:1;
+}
+
+.card-text{
+  font-size:clamp(15px,4vw,19px);
+  font-weight:700;
+  line-height:1.5;
+  color:var(--text);
+}
+
+.card-sub{
+  font-size:13px;color:var(--muted);
+  margin-top:12px;font-weight:600;
+}
+
+.choice-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;width:100%;max-width:380px;
+}
+.choice-btn{
+  padding:14px 10px;border-radius:16px;
+  border:2px solid rgba(255,255,255,0.1);
+  background:var(--card);color:var(--text);
+  font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;
+  cursor:pointer;transition:all 0.2s;line-height:1.3;
+  text-align:center;
+}
+.choice-btn:hover{background:#2d2448;border-color:var(--accent4)}
+.choice-btn:active{transform:scale(0.96)}
+
+.next-btn{
+  width:100%;max-width:380px;padding:16px;
+  background:linear-gradient(135deg,var(--accent),var(--accent4));
+  border:none;border-radius:var(--radius);
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;
+  color:#fff;cursor:pointer;
+  box-shadow:0 8px 30px rgba(255,45,111,0.35);
+  transition:transform 0.15s;
+}
+.next-btn:active{transform:scale(0.97)}
+
+.bottom-actions{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:16px 20px;
+  background:rgba(14,11,22,0.8);backdrop-filter:blur(10px);
+  display:flex;gap:10px;
+}
+
+/* Vote reveal */
+.vote-section{width:100%;max-width:380px;display:flex;flex-direction:column;gap:8px}
+.vote-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--card);border-radius:12px;padding:12px 16px;
+  font-weight:700;font-size:14px;transition:background 0.2s;
+}
+.vote-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:4px;overflow:hidden}
+.vote-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
+
+/* Never have I ever - scoring */
+.score-row{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;max-width:380px;
+  background:var(--card);border-radius:14px;padding:12px 16px;
+  margin-bottom:6px;
+}
+.score-name{font-weight:800;font-size:15px}
+.score-drinks{display:flex;gap:5px;align-items:center}
+.drink-dot{width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.score-count{font-size:13px;color:var(--muted);font-weight:700}
+
+/* Spin wheel */
+.wheel-wrap{position:relative;width:min(65vw,260px);height:min(65vw,260px);margin:0 auto}
+#spin-canvas{width:100%;height:100%;border-radius:50%;box-shadow:0 0 40px rgba(255,45,111,0.3)}
+.wheel-pointer{
+  position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  width:0;height:0;
+  border-left:14px solid transparent;
+  border-right:14px solid transparent;
+  border-top:30px solid var(--accent);
+  filter:drop-shadow(0 0 8px var(--accent));
+}
+.spin-btn{
+  margin-top:16px;padding:14px 40px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:var(--radius);
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.1em;
+  color:#fff;cursor:pointer;box-shadow:0 6px 25px rgba(255,45,111,0.4);
+  transition:transform 0.15s;
+}
+.spin-btn:active{transform:scale(0.96)}
+.spin-result{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,7vw,38px);
+  letter-spacing:0.08em;text-align:center;
+  color:var(--accent2);text-shadow:0 0 20px rgba(255,144,0,0.5);
+  min-height:50px;
+}
+
+/* Reveal overlay (for hot seat) */
+.reveal-overlay{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:200;padding:30px;text-align:center;
+  animation:fadeIn 0.3s ease;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal-overlay.hidden{display:none}
+.reveal-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,10vw,64px);letter-spacing:0.1em;margin-bottom:8px}
+.reveal-sub{font-size:14px;color:var(--muted);margin-bottom:30px}
+.reveal-tap{font-size:13px;color:var(--muted);margin-top:20px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* Modals */
+.modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:300;animation:fadeIn 0.2s ease;
+}
+.modal.hidden{display:none}
+.modal-box{
+  background:var(--surface);border-radius:24px 24px 0 0;
+  padding:28px 24px 36px;width:100%;max-width:480px;
+  animation:slideUp 0.3s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.08em;margin-bottom:16px;color:var(--text)}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;margin-top:-4px}
+
+/* Misc */
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.pill{
+  padding:6px 14px;border-radius:20px;
+  font-size:12px;font-weight:800;
+  border:2px solid rgba(255,255,255,0.1);
+  background:var(--card);color:var(--text);
+  cursor:pointer;transition:all 0.15s;
+}
+.pill.active{border-color:var(--accent);color:var(--accent);background:rgba(255,45,111,0.1)}
+.round-indicator{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:0.1em}
+
+/* Player colors */
+.pc0{color:#ff2d6f}.pc1{color:#ff9000}.pc2{color:#00d4ff}.pc3{color:#a259ff}
+.pc4{color:#00e676}.pc5{color:#ff6b6b}.pc6{color:#ffd93d}.pc7{color:#6bcbff}
+.bg0{background:#ff2d6f}.bg1{background:#ff9000}.bg2{background:#00d4ff}.bg3{background:#a259ff}
+.bg4{background:#00e676}.bg5{background:#ff6b6b}.bg6{background:#ffd93d}.bg7{background:#6bcbff}
+.border0{border-color:#ff2d6f}.border1{border-color:#ff9000}.border2{border-color:#00d4ff}.border3{border-color:#a259ff}
+.border4{border-color:#00e676}.border5{border-color:#ff6b6b}.border6{border-color:#ffd93d}.border7{border-color:#6bcbff}
+</style>
+</head>
+<body>
+
+<!-- Ambient blobs -->
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SETUP SCREEN -->
+<!-- ═══════════════════════════════════════ -->
+<div class="screen" id="setup-screen">
+  <div class="logo">Party Zone</div>
+  <div class="logo-sub">🎓 College Edition · Unlimited Players</div>
+
+  <div class="section-label" style="width:100%;max-width:420px">Players</div>
+  <div class="player-list" id="player-list"></div>
+  <button class="add-player-btn" onclick="addPlayer()">+ Add Player</button>
+
+  <div class="section-label" style="width:100%;max-width:420px">Choose Game</div>
+  <div class="modes-grid" id="modes-grid">
+    <div class="mode-card selected" data-mode="truth-dare" onclick="selectMode(this)">
+      <div class="mode-icon">🎭</div>
+      <div class="mode-name">Truth or Dare</div>
+      <div class="mode-desc">College crushes &amp; chaos</div>
+    </div>
+    <div class="mode-card" data-mode="never-i" onclick="selectMode(this)">
+      <div class="mode-icon">🥂</div>
+      <div class="mode-name">Never Have I Ever</div>
+      <div class="mode-desc">Sip if you did it</div>
+    </div>
+    <div class="mode-card" data-mode="who-most" onclick="selectMode(this)">
+      <div class="mode-icon">👆</div>
+      <div class="mode-name">Who's Most Likely</div>
+      <div class="mode-desc">Point &amp; expose your squad</div>
+    </div>
+    <div class="mode-card" data-mode="hot-seat" onclick="selectMode(this)">
+      <div class="mode-icon">🔥</div>
+      <div class="mode-name">Hot Seat</div>
+      <div class="mode-desc">No escape, no lying</div>
+    </div>
+    <div class="mode-card" data-mode="would-you" onclick="selectMode(this)">
+      <div class="mode-icon">💣</div>
+      <div class="mode-name">Would You Rather</div>
+      <div class="mode-desc">College life dilemmas</div>
+    </div>
+    <div class="mode-card" data-mode="spin-wheel" onclick="selectMode(this)">
+      <div class="mode-icon">🎡</div>
+      <div class="mode-name">Spin The Wheel</div>
+      <div class="mode-desc">Random dares &amp; tasks</div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">🎉 START GAME</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- GAME SCREEN -->
+<!-- ═══════════════════════════════════════ -->
+<div class="screen hidden" id="game-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="goHome()">← Home</button>
+    <div class="game-title" id="game-title-label">TRUTH OR DARE</div>
+    <div class="round-indicator" id="round-label">Round 1</div>
+  </div>
+
+  <div class="player-chips" id="player-chips"></div>
+
+  <div class="card-area" id="card-area">
+    <!-- Dynamically filled -->
+  </div>
+
+  <div class="bottom-actions" id="bottom-actions">
+    <button class="next-btn" id="next-btn" onclick="nextTurn()" style="flex:1">Next ›</button>
+  </div>
+</div>
+
+<!-- Reveal overlay (used for hot seat pass-phone moment) -->
+<div class="reveal-overlay hidden" id="reveal-overlay" onclick="dismissReveal()">
+  <div class="reveal-title" id="reveal-title">Pass the phone</div>
+  <div class="reveal-sub" id="reveal-sub">Hand it to the next player</div>
+  <div class="reveal-tap">Tap anywhere to reveal</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+
+const TRUTHS = [
+  "Have you ever had a crush on someone in this college? Is that person here right now?",
+  "What's the most embarrassing thing you've done to impress a crush on campus?",
+  "Have you ever bunked a lecture to go on a date? Spill the full story.",
+  "Which professor do you find weirdly attractive? Don't lie.",
+  "Have you ever cheated in an exam — and did you get caught?",
+  "What's the wildest place on or near campus where you've hooked up?",
+  "Have you ever lied to your parents about where you were when you were with someone?",
+  "What's one thing you do in your hostel room that would shock everyone here?",
+  "Who in this group have you had a dream about — and what happened in the dream?",
+  "Have you ever had feelings for your best friend's partner in college?",
+  "What's the most desperate thing you've done to get someone's attention on campus?",
+  "Have you ever sent a flirty or embarrassing text to the wrong contact?",
+  "What's the longest you've gone without showering during exam season?",
+  "Have you ever used studying together as an excuse just to spend time with your crush?",
+  "What's one thing you've done at a college party that you regret?",
+  "Have you ever ghosted someone from college — and do they still see you on campus?",
+  "What's a secret you've been hiding from your college friends in this room?",
+  "Have you ever cried over a college relationship breakup in a public place?",
+  "What's the most embarrassing thing in your camera roll right now? Describe it.",
+  "Have you ever been attracted to a senior or junior? Did anything happen?",
+  "What's the biggest lie you've told your parents since joining college?",
+  "Have you ever stalked someone's Instagram at 2am during an exam week?",
+  "What's one rumor about you in college that was actually 100% true?",
+  "Have you ever kissed someone at a college fest or fresher's party?",
+  "Who do you secretly think is the most attractive person in your batch — and why?",
+  "Have you ever pretended to be in a relationship to avoid someone chasing you?",
+  "What's the most childish thing you still do in your hostel that no one knows about?",
+  "Have you ever had a friends-with-benefits situation with someone from college?",
+  "What's something your college friends think about you that's completely wrong?",
+  "Have you ever drunk-texted or called someone from college you shouldn't have?",
+];
+
+const DARES = [
+  "Send a voice note to your crush right now saying 'I've been thinking about you.' Show us before sending.",
+  "Let the group go through your Instagram DMs for 30 seconds. No locking the screen.",
+  "Do your best impression of the professor everyone finds most boring. Others guess who.",
+  "Post an unfiltered, ugly selfie to your WhatsApp status right now.",
+  "Call a college friend not in this room and say 'I need to tell you something important' — then say 'never mind, bye.'",
+  "Let the group pick one contact on your phone and you have to send them a random flirty meme.",
+  "Show your most embarrassing photo from your first year of college.",
+  "Let the person to your left write a word on your arm with a pen.",
+  "Do a runway walk from one end of the room to the other like it's a fashion show.",
+  "Whisper something flirty into the ear of the person on your right.",
+  "Let the group read your last 10 WhatsApp messages from any chat they pick.",
+  "Do 25 push-ups right now or take a dare punishment from the group.",
+  "Let someone in the group set a new contact name for whoever they choose in your phone.",
+  "Speak only in questions for the next 3 full rounds. Every sentence must be a question.",
+  "Show the group your screen time report and explain the most embarrassing app on it.",
+  "Text your college crush just the word 'hey' and show everyone the reply.",
+  "Let the group go through your search history for 20 seconds.",
+  "Do your best impression of someone in this room right now. No telling who until they guess.",
+  "Let someone take the most unflattering photo of you and set it as your phone wallpaper for 10 minutes.",
+  "Sing the first 30 seconds of a Bollywood romantic song — fully committed, no cringing out.",
+  "Tell the group the full story of your most embarrassing college moment in detail.",
+  "Stare into the eyes of the person across from you for 45 seconds without laughing.",
+  "Let the group give you a new nickname that sticks for the rest of the game.",
+  "Act out what you'd do if your crush suddenly asked you out — right now, full performance.",
+  "Show the last 5 photos in your camera roll. No skipping.",
+  "Tell the group one thing you've never admitted about someone in this room.",
+  "Drink whatever the group mixes for you from whatever is available. No complaining.",
+  "Do a 30-second dance to whatever song someone plays, no stopping.",
+  "Let the group look at your college assignment or notes and roast the quality.",
+  "Describe your ideal type in full detail — then the group guesses who in the room fits best.",
+];
+
+const NEVER_I = [
+  "Never have I ever bunked an entire day of college just to chill.",
+  "Never have I ever had a crush on a professor or teaching assistant.",
+  "Never have I ever cheated or copied in an exam or assignment.",
+  "Never have I ever kissed someone at a college party or fest.",
+  "Never have I ever texted someone 'I'm 5 minutes away' while still at home.",
+  "Never have I ever stalked someone's Instagram profile for more than an hour.",
+  "Never have I ever drunk-texted or called someone I had feelings for.",
+  "Never have I ever sent a risky text and immediately regretted it.",
+  "Never have I ever had feelings for my best friend.",
+  "Never have I ever faked being sick to get out of a test or presentation.",
+  "Never have I ever cried over someone from this college.",
+  "Never have I ever had a secret crush on someone in this room.",
+  "Never have I ever stayed up all night with someone and felt something.",
+  "Never have I ever used 'let's study together' as an excuse to be close to someone.",
+  "Never have I ever been in a friends-with-benefits situation.",
+  "Never have I ever blocked someone and then unblocked them out of curiosity.",
+  "Never have I ever made out with someone I just met at a party.",
+  "Never have I ever lied to my parents about who I was with.",
+  "Never have I ever been attracted to a senior or junior.",
+  "Never have I ever stolen food from a roommate or hostel mate.",
+  "Never have I ever pretended to be drunker than I actually was.",
+  "Never have I ever ghosted someone from college — and still see them regularly.",
+  "Never have I ever done something embarrassing in front of a crush.",
+  "Never have I ever gone 60+ hours without sleeping during exam season.",
+  "Never have I ever been on a date during college hours.",
+  "Never have I ever said 'I love you' and not fully meant it.",
+  "Never have I ever sent a photo I wish I could take back.",
+  "Never have I ever had a crush on someone already in a relationship.",
+  "Never have I ever done something wild at a college trip or excursion.",
+  "Never have I ever cried during a breakup in a semi-public place.",
+];
+
+const WHO_MOST = [
+  "Who's most likely to bunk every lecture and still somehow pass?",
+  "Who's most likely to fall for their study partner?",
+  "Who's most likely to have a secret situationship no one knows about?",
+  "Who's most likely to cry during placement season?",
+  "Who's most likely to date a senior just for the thrill?",
+  "Who's most likely to accidentally text their professor something meant for a friend?",
+  "Who's most likely to be found sleeping in the last bench of every class?",
+  "Who's most likely to confess feelings at 3am over text?",
+  "Who's most likely to come to college in their pajamas someday?",
+  "Who's most likely to start drama at the college fresher's party?",
+  "Who's most likely to have the most situationships simultaneously?",
+  "Who's most likely to ghost someone and run into them every single day on campus?",
+  "Who's most likely to fail a subject because they were too distracted by their crush?",
+  "Who's most likely to get away with copying in an exam?",
+  "Who's most likely to end up with someone from this friend group?",
+  "Who's most likely to fall asleep during an important presentation?",
+  "Who's most likely to drunk-text their ex tonight?",
+  "Who's most likely to embarrass the whole group on a college trip?",
+  "Who's most likely to overshare personal stories with strangers?",
+  "Who's most likely to be the most dramatic during breakup season?",
+  "Who's most likely to have the most interesting hostel room stories?",
+  "Who's most likely to forget someone's name after spending a full day with them?",
+  "Who's most likely to flirt with someone just to get notes or assignments?",
+  "Who's most likely to accidentally like a photo from 3 years ago while stalking someone?",
+  "Who's most likely to have the juiciest secret about someone on campus?",
+  "Who's most likely to cry at their own farewell?",
+  "Who's most likely to get married first out of this group?",
+  "Who's most likely to become famous or go viral?",
+  "Who's most likely to have had the most wild college experience overall?",
+  "Who's most likely to slide into someone's DMs at 2am tonight?",
+];
+
+const HOT_SEAT = [
+  "Rate every person in this room on attractiveness from 1 to 10. Out loud. No skipping.",
+  "Who in this room do you trust the least — and give us a real reason.",
+  "If you had to date one person sitting here, who would it be and why?",
+  "Tell us the full story of your most embarrassing college moment. Every detail.",
+  "What's a rumor about you in college that you never officially confirmed — but was true?",
+  "Describe your type in a partner — then the group decides if anyone here fits.",
+  "What's the biggest mistake you've made in your last relationship or situationship?",
+  "If you had to kiss someone in this room, who and why? Be honest.",
+  "Tell us about the last person from college you had feelings for. How did it go?",
+  "What's one thing you've said behind someone's back in this room that they don't know?",
+  "What's your most embarrassing habit that your roommate or hostel mate has caught you doing?",
+  "Who in college do you secretly dislike but act friendly with? Describe without saying the name.",
+  "What's one thing you've done in college that you'd never want your parents to find out?",
+  "Tell us the story of the worst date or hangout you've been on since joining college.",
+  "Describe your most toxic college situationship without naming the person.",
+  "What's the most desperate move you've made for someone's attention on campus?",
+  "Tell us something you genuinely regret from your first year of college.",
+  "What's a secret you've been keeping from your best friends in this room?",
+  "If someone in this room confessed feelings for you, how would you honestly react? Go around the room.",
+  "What's one thing about college life that you told your parents was fine, but absolutely wasn't?",
+];
+
+const WOULD_YOU = [
+  ["Date a senior who's really attractive but very arrogant", "Date someone in your batch who's sweet but your friends find boring"],
+  ["Bunk the entire semester and self-study but fail one subject", "Attend every class but stay completely single all year"],
+  ["Have your entire search history exposed to the group", "Have your most personal chat backup read out loud"],
+  ["Have a secret admirer on campus who never reveals themselves", "Know exactly who likes you but you don't like them back"],
+  ["Be the most popular person on campus but have zero real friends", "Have your close-knit squad but be unknown to everyone else"],
+  ["Get perfect grades but have no social life or relationships in college", "Have the best college social life but an average academic record"],
+  ["Know your roommate secretly dislikes you", "Never know and stay blissfully unaware forever"],
+  ["Date someone for 2 years then have a brutal heartbreak", "Never fall in love in college at all"],
+  ["Confess to your crush and get rejected in front of people", "Never confess and always wonder what could have happened"],
+  ["Have your most embarrassing text conversation shown to the whole class", "Have your most embarrassing photo shown to the whole hostel"],
+  ["Be broke all semester but have an amazing relationship", "Be financially comfortable but perpetually single and lonely"],
+  ["Repeat a full year of college with your current knowledge", "Fast-forward straight to graduation right now"],
+  ["Have every professor love you but classmates find you boring", "Be the most popular student but every professor dislikes you"],
+  ["Date someone from this friend group", "Strictly never date anyone you know from college"],
+  ["Have one legendary college story everyone talks about for years", "Have a consistently good, drama-free, peaceful 4 years"],
+  ["Live in a hostel with very annoying roommates but great college life", "Stay alone at home but miss out on all the hostel fun"],
+  ["Accidentally call your professor 'mom' or 'dad' in class", "Accidentally send a personal rant about your professor to them directly"],
+  ["Find out your college crush liked you back but it's too late now", "Never find out and move on peacefully"],
+  ["Have one absolutely unhinged wild college trip story", "Have four years of safe, comfortable, story-free trips"],
+  ["Be the most attractive person in college but emotionally unavailable", "Be average-looking but incredibly magnetic and lovable"],
+];
+
+const SPIN_TASKS = [
+  "🌶️ DARE — Text your college crush just a single 🌶️ emoji. Show us before sending.",
+  "🧠 TRUTH — Describe your current love life situation in college. Full honesty, no vagueness.",
+  "💬 ROAST — The group gets 60 seconds to roast your college fashion or personality. Sit and smile.",
+  "🎤 PERFORM — Sing the first 30 seconds of a romantic Bollywood song someone picks. Fully committed.",
+  "📱 EXPOSE — Open your Instagram DMs and show the last 3 conversations to the group.",
+  "😘 FLIRT — Give a genuine, specific compliment to every single person in the room. No repeating.",
+  "🃏 SKIP — You escape this round but everyone gets to ask you one yes/no question you must answer.",
+  "🤫 CONFESS — Tell the group one thing about college life you've never told anyone here before.",
+  "💃 IMITATE — Do your best impression of someone in this room. Keep going until they guess correctly.",
+  "🎯 CHALLENGE — Hold a wall-sit position until someone else in the group taps out. Last one standing wins.",
+  "🔥 HOT TAKE — Share your most controversial opinion about love, relationships, or college life.",
+  "📸 PHOTO — Someone in the group takes the most unflattering photo of you and it becomes your status for 5 mins.",
+  "🥂 SIP — Everyone votes: you either finish your drink or do a dare they collectively pick.",
+  "📞 CALL — Call a college friend not here, say 'I have to tell you something' and then say 'you're my favourite, bye.'",
+  "🪞 MIRROR — Make deep eye contact with the person directly across from you for 45 seconds. No laughing allowed.",
+  "🔀 SWAP — Swap phones with the person to your left for 60 seconds. They can look at anything.",
+  "🎭 ACT — Act out your best flirting move in slow motion. Everyone rates you out of 10.",
+  "📝 RATE — Rate everyone in the room on 'most likely to slide into DMs at 2am' from most to least likely.",
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let players = [];
+let selectedMode = 'truth-dare';
+let currentPlayerIndex = 0;
+let round = 1;
+let usedCards = {};
+let neverScores = {};
+let voteCounts = {};
+let spinning = false;
+
+// ═══════════════════════════════════════════════
+// SETUP
+// ═══════════════════════════════════════════════
+function init() {
+  ['Player 1','Player 2','Player 3'].forEach(n => addPlayer(n));
+}
+
+function addPlayer(name) {
+  players.push(name || '');
+  renderPlayerList();
+}
+
+function removePlayer(i) {
+  if (players.length <= 2) return;
+  players.splice(i, 1);
+  renderPlayerList();
+}
+
+function renderPlayerList() {
+  const list = document.getElementById('player-list');
+  const colors = ['#ff2d6f','#ff9000','#00d4ff','#a259ff','#00e676','#ff6b6b','#ffd93d','#6bcbff'];
+  list.innerHTML = '';
+  players.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-row';
+    row.innerHTML = `
+      <div class="player-num" style="background:${colors[i%8]}22;color:${colors[i%8]}">${i+1}</div>
+      <input class="player-input" type="text" placeholder="Player ${i+1} name" value="${p}"
+        oninput="players[${i}]=this.value" maxlength="16">
+      <button class="del-btn" onclick="removePlayer(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = el.dataset.mode;
+}
+
+function getPlayerNames() {
+  return players.map((p, i) => p.trim() || `Player ${i+1}`);
+}
+
+function startGame() {
+  const names = getPlayerNames();
+  if (names.length < 2) { alert('Add at least 2 players!'); return; }
+  currentPlayerIndex = 0;
+  round = 1;
+  usedCards = {};
+  neverScores = {};
+  names.forEach(n => neverScores[n] = 0);
+  voteCounts = {};
+
+  // Setup UI
+  document.getElementById('game-title-label').textContent = modeLabel(selectedMode).toUpperCase();
+  renderChips(names);
+  switchScreen('game-screen');
+  buildRound();
+}
+
+function modeLabel(m) {
+  return {
+    'truth-dare': 'Truth or Dare',
+    'never-i': 'Never Have I Ever',
+    'who-most': "Who's Most Likely",
+    'hot-seat': 'Hot Seat',
+    'would-you': 'Would You Rather',
+    'spin-wheel': 'Spin The Wheel'
+  }[m] || m;
+}
+
+function renderChips(names) {
+  const chips = document.getElementById('player-chips');
+  chips.innerHTML = names.map((n, i) =>
+    `<div class="chip bg${i%8}" id="chip-${i}" style="background:transparent;border:2px solid #33335540">${n}</div>`
+  ).join('');
+}
+
+function updateChip(idx) {
+  document.querySelectorAll('.chip').forEach((c, i) => {
+    c.className = `chip${i===idx ? ' active-chip bg'+i%8 : ''}`;
+    if (i !== idx) {
+      c.style.background='transparent';
+      c.style.borderColor='#33335540';
+    } else {
+      c.style.borderColor='';
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// ROUND LOGIC
+// ═══════════════════════════════════════════════
+function buildRound() {
+  const names = getPlayerNames();
+  const player = names[currentPlayerIndex];
+  updateChip(currentPlayerIndex);
+  document.getElementById('round-label').textContent = `Round ${round}`;
+
+  const area = document.getElementById('card-area');
+  const bot = document.getElementById('bottom-actions');
+
+  if (selectedMode === 'truth-dare') buildTruthDare(area, bot, player);
+  else if (selectedMode === 'never-i') buildNeverI(area, bot, player);
+  else if (selectedMode === 'who-most') buildWhoMost(area, bot, player);
+  else if (selectedMode === 'hot-seat') buildHotSeat(area, bot, player);
+  else if (selectedMode === 'would-you') buildWouldYou(area, bot, player);
+  else if (selectedMode === 'spin-wheel') buildSpinWheel(area, bot, player);
+}
+
+function pickRandom(arr, key) {
+  const unused = arr.filter((_, i) => !usedCards[key+i]);
+  if (unused.length === 0) { usedCards = {}; return arr[Math.floor(Math.random()*arr.length)]; }
+  const idx = arr.indexOf(unused[Math.floor(Math.random()*unused.length)]);
+  usedCards[key+idx] = true;
+  return arr[idx];
+}
+
+// ── Truth or Dare ──
+let pendingChoice = null;
+function buildTruthDare(area, bot, player) {
+  pendingChoice = null;
+  area.innerHTML = `
+    <div class="big-card">
+      <div class="card-type-badge badge-truth" id="td-badge">CHOOSE</div>
+      <div class="card-player pc${currentPlayerIndex%8}">${player}</div>
+      <div class="card-text" id="td-text">What will it be?</div>
+    </div>
+    <div class="choice-row">
+      <button class="choice-btn" onclick="revealTD('truth')">🧠 Truth</button>
+      <button class="choice-btn" onclick="revealTD('dare')">🔥 Dare</button>
+    </div>`;
+  bot.innerHTML = `<button class="next-btn" id="next-btn" onclick="nextTurn()" style="flex:1;opacity:0.4;pointer-events:none">Next ›</button>`;
+}
+
+function revealTD(type) {
+  const text = type === 'truth' ? pickRandom(TRUTHS, 'truth') : pickRandom(DARES, 'dare');
+  document.getElementById('td-badge').textContent = type === 'truth' ? 'TRUTH' : 'DARE';
+  document.getElementById('td-badge').className = `card-type-badge badge-${type}`;
+  document.getElementById('td-text').textContent = text;
+  document.querySelectorAll('.choice-btn').forEach(b => b.style.display='none');
+  const nextBtn = document.getElementById('next-btn');
+  nextBtn.style.opacity='1';
+  nextBtn.style.pointerEvents='auto';
+}
+
+// ── Never Have I Ever ──
+function buildNeverI(area, bot, player) {
+  const stmt = pickRandom(NEVER_I, 'ni');
+  const names = getPlayerNames();
+  area.innerHTML = `
+    <div class="big-card">
+      <div class="card-type-badge badge-neveri">NEVER HAVE I EVER</div>
+      <div class="card-text">${stmt}</div>
+      <div class="card-sub">Everyone who HAS done it — take a sip! 🥂</div>
+    </div>
+    <div style="width:100%;max-width:380px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:700;letter-spacing:0.1em">TAP WHO DRANK</div>
+      <div class="pill-row" id="ni-pills">
+        ${names.map((n,i)=>`<div class="pill" id="ni-${i}" onclick="toggleNI(${i},'${escHtml(n)}')">${n}</div>`).join('')}
+      </div>
+    </div>
+    <div id="ni-scores" class="vote-section"></div>`;
+  renderNIScores();
+  bot.innerHTML = `<button class="next-btn" onclick="nextTurn()" style="flex:1">Next ›</button>`;
+}
+
+function toggleNI(i, name) {
+  const pill = document.getElementById('ni-'+i);
+  if (pill.classList.contains('active')) {
+    pill.classList.remove('active');
+    neverScores[name] = Math.max(0, (neverScores[name]||0)-1);
+  } else {
+    pill.classList.add('active');
+    neverScores[name] = (neverScores[name]||0)+1;
+  }
+  renderNIScores();
+}
+
+function renderNIScores() {
+  const names = getPlayerNames();
+  const max = Math.max(...names.map(n=>neverScores[n]||0),1);
+  document.getElementById('ni-scores').innerHTML = names.map((n,i)=>{
+    const s = neverScores[n]||0;
+    const pct = Math.round((s/max)*100);
+    return `<div class="score-row">
+      <div class="score-name pc${i%8}">${n}</div>
+      <div class="score-drinks">
+        ${Array(s).fill(`<div class="drink-dot bg${i%8}"></div>`).join('')}
+        <span class="score-count">${s} sips</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Who's Most Likely ──
+let wmlVotes = {};
+function buildWhoMost(area, bot, player) {
+  const q = pickRandom(WHO_MOST, 'wml');
+  const names = getPlayerNames();
+  wmlVotes = {};
+  area.innerHTML = `
+    <div class="big-card">
+      <div class="card-type-badge badge-guess">WHO'S MOST LIKELY</div>
+      <div class="card-text">${q}</div>
+      <div class="card-sub">Everyone points at someone on 3... 2... 1!</div>
+    </div>
+    <div style="width:100%;max-width:380px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:700;letter-spacing:0.1em">TAP TO RECORD VOTES</div>
+      <div class="pill-row" id="wml-pills">
+        ${names.map((n,i)=>`<div class="pill" id="wml-${i}" onclick="voteWML(${i},'${escHtml(n)}')">${n}</div>`).join('')}
+      </div>
+    </div>
+    <div id="wml-results" class="vote-section"></div>`;
+  bot.innerHTML = `<button class="next-btn" onclick="nextTurn()" style="flex:1">Next ›</button>`;
+}
+
+function voteWML(i, name) {
+  wmlVotes[name] = (wmlVotes[name]||0)+1;
+  const names = getPlayerNames();
+  const total = Object.values(wmlVotes).reduce((a,b)=>a+b,0);
+  const max = Math.max(...Object.values(wmlVotes),1);
+  document.getElementById('wml-results').innerHTML = names
+    .filter(n=>wmlVotes[n])
+    .sort((a,b)=>wmlVotes[b]-wmlVotes[a])
+    .map((n,i)=>{
+      const v = wmlVotes[n];
+      const pct = Math.round((v/total)*100);
+      const idx = names.indexOf(n);
+      return `<div class="vote-item">
+        <span class="pc${idx%8}" style="font-weight:800">${n}</span>
+        <span style="font-size:13px;color:var(--muted)">${v} vote${v!==1?'s':''} · ${pct}%</span>
+      </div>
+      <div class="vote-bar"><div class="vote-fill bg${idx%8}" style="width:${pct}%"></div></div>`;
+    }).join('');
+}
+
+// ── Hot Seat ──
+function buildHotSeat(area, bot, player) {
+  const q = pickRandom(HOT_SEAT, 'hs');
+  area.innerHTML = `
+    <div class="big-card">
+      <div class="card-type-badge badge-hot">🔥 HOT SEAT</div>
+      <div class="card-player pc${currentPlayerIndex%8}">${player}</div>
+      <div class="card-text">${q}</div>
+      <div class="card-sub">You MUST answer. No passing!</div>
+    </div>`;
+  bot.innerHTML = `<button class="next-btn" onclick="nextTurn()" style="flex:1">Next ›</button>`;
+}
+
+// ── Would You Rather ──
+let wybChoice = null;
+function buildWouldYou(area, bot, player) {
+  const pair = pickRandom(WOULD_YOU, 'wyb');
+  wybChoice = null;
+  area.innerHTML = `
+    <div class="big-card">
+      <div class="card-type-badge badge-wouldyou">WOULD YOU RATHER</div>
+      <div class="card-player pc${currentPlayerIndex%8}">${player}</div>
+      <div class="card-text">Choose one:</div>
+    </div>
+    <div class="choice-row">
+      <button class="choice-btn" id="wyb-a" onclick="pickWYB('a')" style="height:auto;min-height:80px;padding:16px 12px">🅰️ ${pair[0]}</button>
+      <button class="choice-btn" id="wyb-b" onclick="pickWYB('b')" style="height:auto;min-height:80px;padding:16px 12px">🅱️ ${pair[1]}</button>
+    </div>
+    <div id="wyb-result" style="font-size:14px;color:var(--muted);text-align:center;min-height:20px"></div>`;
+  bot.innerHTML = `<button class="next-btn" id="next-btn" onclick="nextTurn()" style="flex:1;opacity:0.4;pointer-events:none">Next ›</button>`;
+}
+
+function pickWYB(c) {
+  wybChoice = c;
+  document.getElementById('wyb-a').style.borderColor = c==='a' ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+  document.getElementById('wyb-b').style.borderColor = c==='b' ? 'var(--accent)' : 'rgba(255,255,255,0.1)';
+  document.getElementById('wyb-result').textContent = c==='a' ? '→ Option A chosen! The group reacts...' : '→ Option B chosen! The group reacts...';
+  const nb = document.getElementById('next-btn');
+  nb.style.opacity='1'; nb.style.pointerEvents='auto';
+}
+
+// ── Spin The Wheel ──
+let spinAngle = 0;
+function buildSpinWheel(area, bot, player) {
+  const names = getPlayerNames();
+  area.innerHTML = `
+    <div style="text-align:center">
+      <div style="font-size:13px;color:var(--muted);font-weight:700;letter-spacing:0.1em;margin-bottom:6px">SPINNING FOR</div>
+      <div class="card-player pc${currentPlayerIndex%8}" style="margin-bottom:16px">${player}</div>
+    </div>
+    <div class="wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="spin-canvas" width="300" height="300"></canvas>
+    </div>
+    <div class="spin-result" id="spin-result"></div>
+    <button class="spin-btn" id="spin-btn" onclick="doSpin()">SPIN!</button>`;
+  bot.innerHTML = `<button class="next-btn" id="next-btn" onclick="nextTurn()" style="flex:1;opacity:0.4;pointer-events:none">Next ›</button>`;
+  drawWheel(spinAngle);
+}
+
+function drawWheel(angle) {
+  const canvas = document.getElementById('spin-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx=150,cy=150,r=140;
+  const segments = SPIN_TASKS.length;
+  const colors = ['#ff2d6f','#ff9000','#00d4ff','#a259ff','#00e676','#ff6b6b','#ffd93d','#6bcbff','#ff2d6f','#ff9000','#00d4ff','#a259ff','#00e676','#ff6b6b','#ffd93d'];
+  ctx.clearRect(0,0,300,300);
+  for(let i=0;i<segments;i++){
+    const start=angle+(i/segments)*Math.PI*2;
+    const end=angle+((i+1)/segments)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=2;ctx.stroke();
+    ctx.save();
+    ctx.translate(cx,cy);ctx.rotate(start+(end-start)/2);
+    ctx.textAlign='right';ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.font='bold 11px Nunito';
+    const label=SPIN_TASKS[i].split('—')[0].trim().substring(0,12);
+    ctx.fillText(label,r-8,4);
+    ctx.restore();
+  }
+  // Center circle
+  ctx.beginPath();ctx.arc(cx,cy,22,0,Math.PI*2);
+  ctx.fillStyle='#0e0b16';ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=2;ctx.stroke();
+}
+
+function doSpin() {
+  if(spinning)return;
+  spinning=true;
+  document.getElementById('spin-btn').disabled=true;
+  document.getElementById('spin-result').textContent='';
+  const extra=Math.PI*2*(5+Math.random()*5);
+  const targetAngle=spinAngle+extra;
+  const duration=3000;const start=performance.now();
+  const startAngle=spinAngle;
+  function animate(now){
+    const t=Math.min(1,(now-start)/duration);
+    const ease=1-Math.pow(1-t,4);
+    spinAngle=startAngle+extra*ease;
+    drawWheel(spinAngle);
+    if(t<1){requestAnimationFrame(animate)}
+    else{
+      spinAngle=targetAngle%(Math.PI*2);
+      const segments=SPIN_TASKS.length;
+      const normalizedAngle=((Math.PI*1.5-spinAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+      const idx=Math.floor(normalizedAngle/(Math.PI*2)*segments)%segments;
+      const result=SPIN_TASKS[idx];
+      document.getElementById('spin-result').textContent=result.split('—')[1]?.trim()||result;
+      spinning=false;
+      document.getElementById('spin-btn').disabled=false;
+      const nb=document.getElementById('next-btn');
+      nb.style.opacity='1';nb.style.pointerEvents='auto';
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function nextTurn() {
+  const names = getPlayerNames();
+  currentPlayerIndex = (currentPlayerIndex+1)%names.length;
+  if (currentPlayerIndex === 0) round++;
+  buildRound();
+}
+
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.toggle('hidden', s.id !== id);
+  });
+}
+
+function goHome() {
+  switchScreen('setup-screen');
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function escHtml(s) {
+  return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
